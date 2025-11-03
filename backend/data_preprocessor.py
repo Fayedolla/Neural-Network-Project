@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 class DataPreprocessor:
     def __init__(self, csv_path='birds.csv'):
         self.df = pd.read_csv(csv_path)
         self.label_encoder = LabelEncoder()
+        self.scaler = None
         self._preprocess_gender()
         
     def _preprocess_gender(self):
@@ -20,9 +21,14 @@ class DataPreprocessor:
         """Get list of unique classes"""
         return sorted(self.df['bird category'].unique().tolist())
     
-    def get_data(self, feature1, feature2, class1, class2):
+    def get_data(self, feature1, feature2, class1, class2, normalize=True):
         """
         Get filtered and split data for training and testing
+        
+        Parameters:
+        -----------
+        normalize : bool
+            Whether to normalize features using StandardScaler
         
         Returns:
         --------
@@ -58,12 +64,19 @@ class DataPreprocessor:
         np.random.shuffle(train_indices)
         np.random.shuffle(test_indices)
         
+        # Normalize features if requested
+        if normalize:
+            self.scaler = StandardScaler()
+            X_normalized = self.scaler.fit_transform(X)
+        else:
+            X_normalized = X
+        
         return {
-            'train_X': X[train_indices].tolist(),
+            'train_X': X_normalized[train_indices].tolist(),
             'train_y': y[train_indices].tolist(),
-            'test_X': X[test_indices].tolist(),
+            'test_X': X_normalized[test_indices].tolist(),
             'test_y': y[test_indices].tolist(),
-            'all_X': X.tolist(),
+            'all_X': X_normalized.tolist(),
             'all_y': y.tolist(),
             'feature_names': [feature1, feature2],
             'class_names': [class1, class2]

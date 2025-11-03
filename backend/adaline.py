@@ -73,14 +73,26 @@ class Adaline:
             # Calculate errors
             errors = y - net_input
             
+            # Calculate weight updates
+            weight_update = self.learning_rate * X.T.dot(errors)
+            bias_update = self.learning_rate * errors.sum() if self.use_bias else 0
+            
+            # Clip gradients to prevent overflow
+            weight_update = np.clip(weight_update, -1e10, 1e10)
+            bias_update = np.clip(bias_update, -1e10, 1e10)
+            
             # Update weights and bias using gradient descent
-            self.weights += self.learning_rate * X.T.dot(errors)
+            self.weights += weight_update
             if self.use_bias:
-                self.bias += self.learning_rate * errors.sum()
+                self.bias += bias_update
+            
+            # Check for NaN/Inf in weights
+            if np.any(np.isnan(self.weights)) or np.any(np.isinf(self.weights)):
+                raise ValueError("Training diverged: weights contain NaN or Inf. Try reducing learning rate or normalizing input data.")
             
             # Calculate MSE
             mse = self.compute_mse(y, net_input)
-            self.mse_per_epoch.append(mse)
+            self.mse_per_epoch.append(float(mse))
             
             # Early stopping if MSE below threshold
             if mse < self.mse_threshold:

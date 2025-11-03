@@ -10,7 +10,7 @@ app = FastAPI(title="Neural Network Classifier API")
 # CORS middleware for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -71,7 +71,7 @@ def prepare_data(request: TrainRequest):
 def train_model(request: TrainRequest):
     """Train the model with given parameters"""
     global current_trainer
-    
+
     try:
         # Get data
         data = preprocessor.get_data(
@@ -80,7 +80,7 @@ def train_model(request: TrainRequest):
             request.class1,
             request.class2
         )
-        
+
         # Initialize trainer
         current_trainer = ModelTrainer(
             algorithm=request.algorithm,
@@ -89,13 +89,13 @@ def train_model(request: TrainRequest):
             mse_threshold=request.mse_threshold,
             use_bias=request.use_bias
         )
-        
+
         # Train model
         training_results = current_trainer.train(data['train_X'], data['train_y'])
-        
+
         # Get decision boundary
         decision_boundary = current_trainer.get_decision_boundary()
-        
+
         return {
             "training_results": training_results,
             "decision_boundary": decision_boundary,
@@ -108,23 +108,23 @@ def train_model(request: TrainRequest):
 def test_model(request: TestRequest):
     """Test the trained model"""
     global current_trainer
-    
+
     if current_trainer is None:
         raise HTTPException(status_code=400, detail="Model not trained yet")
-    
+
     try:
         # Make predictions
         predictions = current_trainer.predict(request.test_X)
-        
+
         # Compute confusion matrix
         confusion_matrix = current_trainer.compute_confusion_matrix(
             request.test_y,
             predictions
         )
-        
+
         # Compute accuracy
         accuracy = current_trainer.compute_accuracy(request.test_y, predictions)
-        
+
         return {
             "predictions": predictions,
             "confusion_matrix": confusion_matrix,
@@ -137,10 +137,10 @@ def test_model(request: TestRequest):
 def classify_sample(request: PredictRequest):
     """Classify a single sample"""
     global current_trainer
-    
+
     if current_trainer is None:
         raise HTTPException(status_code=400, detail="Model not trained yet")
-    
+
     try:
         prediction = current_trainer.classify_single_sample(request.sample)
         return {"prediction": prediction}
@@ -149,4 +149,4 @@ def classify_sample(request: PredictRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8002)

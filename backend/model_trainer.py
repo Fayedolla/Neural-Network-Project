@@ -32,13 +32,20 @@ class ModelTrainer:
         
         self.model.fit(train_X, train_y)
         
+        # Convert numpy types to Python native types for JSON serialization
+        weights = [float(w) for w in self.model.weights]
+        bias = float(self.model.bias)
+        
+        # Convert training progress to native Python types
+        if self.algorithm == 'perceptron':
+            training_progress = [int(e) for e in self.model.errors_per_epoch]
+        else:
+            training_progress = [float(e) for e in self.model.mse_per_epoch]
+        
         return {
-            'weights': self.model.weights.tolist(),
-            'bias': float(self.model.bias),
-            'training_progress': (
-                self.model.errors_per_epoch if self.algorithm == 'perceptron' 
-                else self.model.mse_per_epoch
-            )
+            'weights': weights,
+            'bias': bias,
+            'training_progress': training_progress
         }
     
     def predict(self, X):
