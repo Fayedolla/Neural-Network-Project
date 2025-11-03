@@ -197,14 +197,4 @@ For the report, test at least **5 combinations** for each algorithm showing:
 ✅ Responsive design
 ✅ Real-time visualization
 
-## 📄 License
 
-Educational project for Deep Learning course
-
-## 👥 Authors
-
-[Your Name/Team Names]
-
-## 🙏 Acknowledgments
-
-Deep Learning Course - Level 4, Semester 1
